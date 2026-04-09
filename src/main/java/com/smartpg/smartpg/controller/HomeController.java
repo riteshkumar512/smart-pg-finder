@@ -68,7 +68,7 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        return "index";
+        return "redirect:/login";
     }
     //home page
     @GetMapping("/home")
