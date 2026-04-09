@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>PG List</title>
+
+    <style>
+        body { background: #f4f7fb; font-family: 'Segoe UI', sans-serif; }
+
+        .main-content { padding: 30px 40px; }
+
+        .pg-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 320px));
+            gap: 25px;
+        }
+        .pg-card {
+            position: relative;  /* IMPORTANT */
+        }
+
+        .wishlist-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            background: white;
+            padding: 5px 8px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .pg-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            cursor:pointer;
+        }
+
+        .pg-card:hover { transform: translateY(-5px); }
+
+        .img-box img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .pg-info {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .book-btn {
+            padding: 6px 14px;
+            background: #00bcd4;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+        .location-btn {
+            padding: 5px 10px;
+            background: #4caf50;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+
+    </style>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div style="display:flex; justify-content: space-between; padding:10px;">
+    <h2>Available PGs</h2>
+</div>
+
+<div class="main-content">
+
+    <!-- ERROR MESSAGE -->
+    <p th:if="${param.error != null and param.error[0] == 'already_booked'}"
+       style="background:#ffe6e6; color:#cc0000; padding:10px; border-radius:8px; width:60% ; margin:15px auto; text-align:center;">
+        ⚠️ You already booked this PG
+    </p>
+
+    <!-- EMPTY CHECK -->
+    <div th:if="${#lists.isEmpty(data)}"
+         style="text-align:center; margin-top:30px; font-size:18px;">
+        ❌ No PG found for your search
+    </div>
+
+    <!-- GRID -->
+    <div class="pg-grid" th:if="${!#lists.isEmpty(data)}">
+
+
+        <div class="pg-card"
+             th:each="item : ${data}"
+             th:onclick="'handleCardClick(event, ' + ${item.pg.id} + ')'">
+
+            <!-- ❤️ Wishlist Icon -->
+            <span class="wishlist-icon"
+                  th:attr="data-id=${item.pg.id}"
+                  th:text="${wishlistIds != null and wishlistIds.contains(item.pg.id)} ? '❤️' : '🤍'"
+                  onclick="handleWishlist(event, this)">
+    </span>
+            <!-- IMAGE -->
+            <div class="img-box">
+                <img th:if="${item.pg.image != null and item.pg.image != ''}"
+                     th:src="${{item.pg.image}}">
+            </div>
+
+            <!-- INFO -->
+            <div class="pg-info">
+
+                <h3 th:text="${item.pg.name}"></h3>
+
+                <div class="price-row">
+                    <span>₹ <span th:text="${item.pg.price}"></span>/month</span>
+
+                    <a th:href="'https://www.google.com/maps/search/' + ${item.pg.location}"
+                       target="_blank"
+                       class="location-btn"
+                       onclick="event.stopPropagation();">
+                        📍 View
+                    </a>
+                </div>
+
+                <p th:text="${item.pg.location}"></p>
+
+                <!-- RATING -->
+                <p>
+                <span>
+                        <span th:each="i : ${#numbers.sequence(1,5)}">
+                        <span th:if="${i <= item.pg.rating}">⭐</span>
+                        <span th:if="${i > item.pg.rating}">☆</span>
+                        </span>
+                        (<span th:text="${#numbers.formatDecimal(item.pg.rating,1,1)}"></span>)
+                </span>
+                </p>
+
+                <!-- SHORT REVIEW -->
+                <p th:if="${item.shortReview != null and item.shortReview != ''}">
+                    📝 <span th:text="${item.shortReview}"></span>
+                    <a th:href="@{/pg/{id}(id=${item.pg.id})}"
+                       onclick="event.stopPropagation();">
+                        more
+                    </a>
+                </p>
+
+                <!-- IF NO REVIEW -->
+                <p th:if="${item.shortReview == null or item.shortReview == ''}">
+                    No reviews yet
+                </p>
+
+                <!-- BOOK BUTTON -->
+                <a th:href="@{/book/{id}(id=${item.pg.id})}"
+                   class="book-btn"
+                   onclick="event.stopPropagation();">
+                    Book
+                </a>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+<script>
+
+<!--    // ✅ Card click control-->
+    function handleCardClick(event, pgId) {
+
+<!--        // If clicked on heart → do nothing-->
+        if (event.target.closest(".wishlist-icon")) {
+            return;
+        }
+
+<!--        // Otherwise open detail page-->
+        window.location.href = '/pg/' + pgId;
+    }
+
+
+<!--   ✅ Wishlist toggle-->
+   async function handleWishlist(event, el) {
+    event.stopPropagation();
+
+    const pgId = el.getAttribute("data-id");
+
+    try {
+        const res = await fetch(`/wishlist/toggle/${pgId}`, {
+            method: 'POST',
+            credentials: 'same-origin'
+        });
+
+        const data = await res.text();
+
+        if (data === "added") {
+            el.innerText = "❤️";
+        } else {
+            el.innerText = "🤍";
+        }
+
+        const countRes = await fetch('/wishlist/count?ts=' + Date.now(), {
+            credentials: 'same-origin'
+        });
+
+        const count = await countRes.text();
+
+        const countEl = document.getElementById("wishlistCount");
+        if (countEl) {
+            countEl.innerText = count;
+        }
+
+    } catch (err) {
+        console.error("Wishlist error:", err);
+    }
+}
+
+
+<!--    // ✅ Navbar count update-->
+    function updateWishlistCount() {
+
+        fetch('/wishlist/count', {
+            credentials: 'same-origin'
+        })
+        .then(res => res.text())
+        .then(count => {
+    console.log("Count from server:", count);
+            const el = document.getElementById("wishlistCount");
+
+            if (el) {
+                el.innerText = count;
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

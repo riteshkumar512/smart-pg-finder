@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Owner Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            background: #eef2f7;
+            font-family: Arial;
+        }
+
+        .dashboard {
+            width: 90%;
+            margin: 20px auto;
+        }
+        .top-section {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .chart-card {
+            flex: 1.2;
+            height: 280px;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .chart-wrapper {
+            width: 100%;
+            max-width: auto;
+            height: 250px;
+            margin: auto;
+        }
+        .stats {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .box {
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .chart-card {
+            height: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px;
+        }
+
+        .pg-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pg-card {
+            background: white;
+            padding: 15px;
+            margin: 10px ;
+            border-radius: 10px;
+            width: 220px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+        .btn-group {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            display:inline-block;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none !important;
+            color: white !important;
+            font-size: 14px;
+            transition: 0.2s;
+            font-weight:500;
+        }
+
+        .edit-btn {
+            background: #4caf50 !important;
+        }
+
+        .delete-btn {
+            background: #f44336 !important;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+            transform: scale(1.05);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #0072ff;
+            color: white;
+            padding: 12px;
+        }
+
+        td {
+            padding: 10px;
+        }
+        .status {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .confirmed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+        .approve-btn {
+            background: #0072ff;
+        }
+    </style>
+
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<h2 style="text-align:center;">Owner Dashboard</h2>
+
+<div class="dashboard">
+
+    <div class="top-section">
+
+        <!-- LEFT: CHART -->
+        <div class="chart-card">
+            <div class="chart-wrapper">
+            <canvas id="myChart"></canvas>
+            </div>
+        </div>
+
+        <!-- RIGHT: STATS -->
+        <div class="stats">
+            <div class="box">Total PG: <span th:text="${total}"></span></div>
+            <div class="box">Confirmed: <span th:text="${confirmed}"></span></div>
+            <div class="box">Pending Bookings: <span th:text="${pending}"></span></div>
+        </div>
+
+    </div>
+
+    <hr>
+
+    <!-- MY PGs -->
+    <h3>🏠 My PGs</h3>
+
+    <div class="pg-container">
+        <div class="pg-card" th:each="pg : ${pgList}">
+            <h4 th:text="${pg.name}"></h4>
+            <p th:text="${pg.location}"></p>
+            <p>₹ <span th:text="${pg.price}"></span></p>
+            <div class="btn-group">
+                <a th:href="@{'/edit-pg/' + ${pg.id}}" class="btn edit-btn">Edit</a>
+                <a th:href="@{'/delete-pg/' + ${pg.id}}" class="btn delete-btn">Delete</a>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- BOOKINGS -->
+    <h3>📥 Booking Requests</h3>
+
+    <table border="1" style="width:100%; text-align:center;">
+        <tr>
+            <th>User</th>
+            <th>PG</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+
+        <tr th:each="item : ${bookings}">
+            <td th:text="${item.user.name}"></td>
+            <td th:text="${item.pg.name}"></td>
+            <td th:text="${item.booking.status}"></td>
+
+            <td>
+
+                <!-- If pending -->
+            <span th:if="${item.booking.status == 'PENDING'}">
+                <a th:href="@{'/booking/confirm/' + ${item.booking.id} + '?source=dashboard'}"
+                class="btn approve-btn">
+                Approve
+                </a>
+            </span>
+
+                <!-- If confirmed -->
+            <span th:if="${item.booking.status == 'CONFIRMED'}"
+                  class="status confirmed">
+                ✔ Approved
+            </span>
+
+            </td>
+        </tr>
+    </table>
+
+</div>
+
+<!-- ✅ CHART SCRIPT -->
+<script th:inline="javascript">
+    const total = [[${total}]];
+    const confirmed = [[${confirmed}]];
+     const pending = [[${pending}]];
+
+    const ctx = document.getElementById('myChart');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ["Total PG", "Confirmed Bookings","Pending"],
+            datasets: [{
+                label: "Dashboard Stats",
+                data: [total, confirmed,pending],
+                backgroundColor: ["#2196f3", "#4caf50","#ff9800"]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+</script>
+
+</body>
+</html>

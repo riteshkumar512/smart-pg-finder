@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>PG Details</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 50%;
+            margin: 30px auto;
+            display:flex;
+            justify-item:centre;
+            flex-direction: column;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .pg-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .pg-info {
+            margin-top: 10px;
+            color: gray;
+        }
+
+        .pg-price {
+            color: #0072ff;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .pg-img img {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            margin-top: 15px;
+            object-fit: cover;
+        }
+
+        .rating {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+
+        .reviews-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .review-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .stars {
+            color: gold;
+            font-size: 16px;
+        }
+
+        .review-text {
+            margin-top: 5px;
+            color: #444;
+        }
+
+        .no-review {
+            color: gray;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+
+    <!-- PG DETAILS -->
+    <div class="card">
+
+        <div class="pg-title" th:text="${pg.name}"></div>
+
+        <div class="pg-info">
+            📍 <span th:text="${pg.location}"></span>,
+            <span th:text="${pg.city}"></span>
+        </div>
+
+        <div class="pg-price">
+            ₹ <span th:text="${pg.price}"></span>/month
+        </div>
+
+        <!-- IMAGE -->
+        <div class="pg-img">
+            <img th:if="${pg.image != null}"
+                 th:src="@{${pg.image}}">
+        </div>
+
+        <!-- RATING -->
+        <div class="rating">
+            Rating:
+            <span>
+            <span th:each="i : ${#numbers.sequence(1,5)}">
+                <span th:if="${i <= pg.rating}">⭐</span>
+                <span th:if="${i > pg.rating}">☆</span>
+                </span>
+                (<span th:text="${#numbers.formatDecimal(pg.rating,1,1)}"></span>)
+            </span>
+
+            <span th:if="${pg.rating == 0}">
+                No ratings yet
+            </span>
+        </div>
+
+    </div>
+
+    <!-- REVIEWS SECTION -->
+    <div class="card">
+
+        <div class="reviews-title">📝 Reviews</div>
+
+        <!-- IF REVIEWS EXIST -->
+        <div th:if="${#lists.size(reviews) > 0}">
+
+            <div class="review-card" th:each="r : ${reviews}">
+
+                <div class="stars">
+                    ⭐ <span th:text="${r.stars}"></span>
+                </div>
+
+                <div class="review-text" th:text="${r.review}"></div>
+<!--                Reviewer Name-->
+                <div style="margin-top:5px; font-size:13px; color:gray;">
+                    — <span th:text="${r.user.name}"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- IF NO REVIEWS -->
+        <div th:if="${#lists.size(reviews) == 0}" class="no-review">
+            😔 No reviews yet
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

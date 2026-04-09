@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Owner Bookings</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #eef2f7;
+        }
+
+        table {
+            margin: auto;
+            width: 80%;
+            text-align: center;
+            background: white;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #0072ff;
+            color: white;
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<h2 style="text-align:center;">📊 All Bookings</h2>
+
+<table border="1" style="margin:auto; width:90%; text-align:center; border-collapse: collapse;">
+
+    <tr style="background:#0072ff; color:white;">
+        <th>User</th>
+        <th>PG Name</th>
+        <th>Phone</th>
+        <th>City</th>
+        <th>Status</th>
+        <th>Payment</th>
+        <th>Action</th>
+    </tr>
+
+    <!-- LOOP -->
+    <tr th:each="item : ${data}">
+
+        <td th:text="${item.user.name}"></td>
+
+        <td th:text="${item.pg.name}"></td>
+
+        <td th:text="${item.user.phone}"></td>
+
+        <td th:text="${item.pg.city}"></td>
+
+        <!-- STATUS -->
+        <td>
+            <span th:text="${item.booking.status}"></span>
+        </td>
+
+        <td>
+    <span class="badge"
+          th:text="${item.booking.paymentStatus}"
+          th:style="
+            ${item.booking.paymentStatus == 'SUCCESS'} ? 'color:green;' :
+            (${item.booking.paymentStatus == 'PENDING'} ? 'color:orange;' : 'color:red;')">
+    </span>
+        </td>
+
+        <!-- ACTION -->
+        <td>
+            <!-- ✅ Allow confirm ONLY if paid -->
+            <a th:if="${item.booking.status == 'PENDING' and item.booking.paymentStatus == 'SUCCESS'}"
+               th:href="@{'/booking/confirm/' + ${item.booking.id}}"
+               style="background:green; color:white; padding:6px 12px; border-radius:6px; text-decoration:none;">
+                ✔ Confirm
+            </a>
+
+            <!-- ❌ Payment pending -->
+            <span th:if="${item.booking.paymentStatus == 'PENDING'}"
+                  style="color:orange; font-weight:bold;">
+            Payment Pending
+            </span>
+
+            <span th:if="${item.booking.status == 'CONFIRMED'}"
+                  style="color:green; font-weight:bold;">
+                ✔ Confirmed
+            </span>
+
+            <span th:if="${item.booking.status == 'CANCELLED'}"
+                  style="color:red;">
+                ❌ Cancelled
+            </span>
+        </td>
+
+    </tr>
+
+</table>
+
+<!-- EMPTY -->
+<p th:if="${#lists.isEmpty(data)}" style="text-align:center;">
+    No bookings yet
+</p>
+
+</body>
+</html>

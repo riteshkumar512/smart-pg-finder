@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Smart PG Finder</title>
+
+</head>
+
+<body>
+
+<div th:fragment="navbar">
+
+    <nav class="navbar">
+
+        <div class="logo">
+            🏠 Smart PG Finder
+        </div>
+
+        <div class="nav-links">
+
+            <!-- 👤 USER -->
+            <th:block th:if="${session.role != null and session.role == 'user'}">
+                <a th:href="@{/home}">Home</a>
+                <a th:href="@{/pgs}">View PG</a>
+                <a th:href="@{/search}">Search</a>
+                <a th:href="@{/my-bookings}">My Bookings</a>
+
+                <a th:href="@{/wishlist}">
+                    ❤️ Wishlist (<span id="wishlistCount" th:text="${wishlistCount}">0</span>)
+                </a>
+            </th:block>
+
+            <!-- 🏠 OWNER -->
+            <th:block th:if="${session.role != null and session.role == 'owner'}">
+                <a th:href="@{/owner/dashboard}">Dashboard</a>
+                <a th:href="@{/add-pg}">Add PG</a>
+                <a th:href="@{/owner/pgs}">My PGs</a>
+                <a th:href="@{/owner/bookings}">Bookings</a>
+            </th:block>
+
+            <!-- USERNAME -->
+            <span class="user" th:if="${session.username != null}">
+                👤 <span th:text="${session.username}"></span>
+            </span>
+
+            <!-- LOGOUT -->
+            <a th:href="@{/logout}" class="logout-btn"
+               th:if="${session.userId != null}">Logout</a>
+
+        </div>
+
+    </nav>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>My Wishlist</title>
+
+  <style>
+    body {
+        background: #f4f7fb;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    h2 {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .pg-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 25px;
+        padding: 20px 40px;
+    }
+
+    .pg-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+        transition: 0.3s;
+    }
+
+    .pg-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .img-box img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .pg-info {
+        padding: 12px;
+    }
+
+    .view-btn {
+        display: inline-block;
+        padding: 6px 12px;
+        background: #00bcd4;
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+        margin-top: 8px;
+    }
+
+    .remove-btn {
+        display: inline-block;
+        padding: 6px 12px;
+        background: #ff4d4d;
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+        margin-left: 8px;
+    }
+
+    .empty {
+        text-align: center;
+        margin-top: 40px;
+        color: gray;
+    }
+  </style>
+  <link rel="stylesheet" th:href="@{/style.css}">
+
+</head>
+
+<body>
+
+<!-- ✅ Navbar -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<h2>❤️ My Favorite PGs</h2>
+
+<!-- ✅ Empty -->
+<div th:if="${#lists.isEmpty(data)}" class="empty">
+  😔 No PGs in your wishlist
+</div>
+
+<!-- ✅ Grid -->
+<div class="pg-grid" th:if="${!#lists.isEmpty(data)}">
+
+  <div class="pg-card" th:each="item : ${data}">
+
+    <!-- Image -->
+    <div class="img-box">
+      <img th:src="@{ ${item.pg.image != null ? item.pg.image : 'default.jpg'}}">
+    </div>
+
+    <!-- Info -->
+    <div class="pg-info">
+
+      <h3 th:text="${item.pg.name}"></h3>
+
+      <p>📍 <span th:text="${item.pg.location}"></span></p>
+
+      <p>₹ <span th:text="${item.pg.price}"></span>/month</p>
+
+      <!-- Rating -->
+      <p th:if="${item.pg.rating != null}">
+        ⭐ <span th:text="${item.pg.rating}"></span>
+      </p>
+
+      <!-- Buttons -->
+      <a th:href="@{/book/{id}(id=${item.pg.id})}" class="view-btn">
+        Book
+      </a>
+
+      <a th:href="@{/wishlist/remove/{id}(id=${item.pg.id})}" class="remove-btn">
+        Remove ❌
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

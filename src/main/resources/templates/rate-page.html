@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Rate & Review</title>
+
+    <style>
+        body {
+            background: #f4f7fb;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0px;
+<!--            height: 100vh;-->
+        }
+        .rating-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .pg-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* ⭐ STAR RATING */
+        .star-rating {
+            direction: rtl;
+            display: inline-flex;
+            font-size: 35px;
+            margin: 10px 0;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ccc;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .star-rating input:checked ~ label {
+            color: gold;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: gold;
+        }
+
+        /* 📝 TEXTAREA */
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            resize: none;
+            font-size: 14px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #00bcd4;
+        }
+
+        /* 🚀 BUTTON */
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #00bcd4, #0072ff);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+</head>
+
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="rating-wrapper">
+<div class="card">
+
+    <div class="pg-title" th:text="${pg.name}"></div>
+
+    <form th:action="@{/rate/{id}(id=${pg.id})}" method="post">
+
+        <!-- ⭐ STAR INPUT -->
+        <div class="star-rating">
+            <input type="radio" name="stars" value="5" id="star5"><label for="star5">★</label>
+            <input type="radio" name="stars" value="4" id="star4"><label for="star4">★</label>
+            <input type="radio" name="stars" value="3" id="star3"><label for="star3">★</label>
+            <input type="radio" name="stars" value="2" id="star2"><label for="star2">★</label>
+            <input type="radio" name="stars" value="1" id="star1" required><label for="star1">★</label>
+        </div>
+
+        <!-- 📝 REVIEW -->
+        <textarea name="review" placeholder="Write your review (optional)..."></textarea>
+
+        <!-- 🚀 SUBMIT -->
+        <button type="submit">Submit Review</button>
+
+    </form>
+
+</div>
+
+</div>
+
+</body>
+</html>

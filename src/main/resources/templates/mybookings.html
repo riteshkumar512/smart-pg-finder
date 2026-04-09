@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Bookings</title>
+    <style>
+        body {
+        background: #f4f7fb;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        /* GRID */
+        .booking-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+
+        /* CARD */
+        .booking-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .booking-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+        }
+
+        /* TEXT */
+        .pg-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 6px;
+        }
+
+        .pg-location {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .pg-rent {
+            margin-top: 10px; /* FIXED */
+            font-weight: bold;
+            color: #0072ff;
+            margin-bottom: 12px;
+        }
+
+        /* IMAGE */
+        .pg-img img {
+            width: 100%;
+            height: 200px;
+            border-radius: 12px;
+            object-fit: cover;
+            transition: 0.3s;
+        }
+
+        .pg-img img:hover {
+            transform: scale(1.03);
+        }
+
+        /* RATE BUTTON */
+        .booking-card a[href*="rate-page"] {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 14px;
+            background: #ffc107;
+            color: black;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .booking-card a[href*="rate-page"]:hover {
+            background: #ffb300;
+            transform: scale(1.05);
+        }
+
+        /* STATUS */
+        .status {
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        /* BADGES */
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-left: 6px;
+            font-weight: 600;
+        }
+
+        /* BOOKING STATUS */
+        .booked {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* PAYMENT */
+        .paid {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        /* BUTTON ROW */
+        .btn-row {
+            margin-top: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* PAY BUTTON (TARGET INLINE STYLE) */
+        .btn-row a[href*="/payment/"] {
+            background: linear-gradient(135deg, #0072ff, #00c6ff);
+            color: white !important;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+
+        .btn-row a[href*="/payment/"]:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,114,255,0.3);
+        }
+
+        /* CANCEL BUTTON */
+        .cancel-btn {
+            background: linear-gradient(135deg, #ff4d4d, #ff0000);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .cancel-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255,0,0,0.3);
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+</head>
+
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+
+<div style="display:flex; justify-content: space-between; padding: 10px 20px;">
+    <h2>Available PGs</h2>
+</div>
+
+<!-- EMPTY CHECK -->
+<p th:if="${#lists.isEmpty(data)}"
+   style="text-align:center; margin-top:40px; color:gray;">
+    😔 No bookings yet
+</p>
+
+<div class="booking-container">
+
+    <!-- LOOP -->
+    <div class="booking-card" th:each="item  : ${data}">
+
+        <div class="pg-name" th:text="${item.pg.name}"></div>
+
+        <div class="pg-location">
+            📍 <span th:text="${item.pg.location}"></span>
+        </div>
+
+        <div class="pg-rent">
+            ₹ <span th:text="${item.pg.price}"></span>/month
+        </div>
+        <div  class="pg-img">
+        <img th:if="${item.pg.image != null}"
+             th:src="${{item.pg.image}}">
+        </div>
+
+        <a th:if="${item.booking.status == 'CONFIRMED' and (item.rated == null or !item.rated)}"
+           th:href="@{/rate-page/{id}(id=${item.pg.id})}">
+            ⭐ Rate & Review
+        </a>
+
+        <div th:if="${item.rated != null and item.rated}">
+            <p>
+                ⭐ Rating:
+                <span th:if="${item.pg.rating > 0}"
+                      th:text="${#numbers.formatDecimal(item.pg.rating, 1, 1)}"></span>
+
+                <span th:if="${item.pg.rating == 0}">
+            No ratings yet
+        </span>
+            </p>
+        </div>
+        <div class="status">
+            Status:
+        <span class="badge"
+                  th:text="${item.booking.status}"
+                  th:classappend="
+        ${item.booking.status == 'CONFIRMED'} ? 'booked' :
+        (${item.booking.status == 'CANCELLED'} ? 'cancelled' : 'pending')">
+        </span>
+        </div>
+
+        <div class="status">
+            Payment:
+            <span class="badge"
+                  th:text="${item.booking.paymentStatus}"
+                  th:classappend="
+        ${item.booking.paymentStatus == 'SUCCESS'} ? 'paid' :
+        (${item.booking.paymentStatus == 'PENDING'} ? 'pending' : 'cancelled')">
+    </span>
+        </div>
+        <div class="btn-row">
+
+            <a th:if="${item.booking.paymentStatus == 'PENDING'}"
+               th:href="@{/payment/{id}(id=${item.booking.id})}"
+               style="background:#0072ff; color:white; padding:8px 16px; border-radius:8px; text-decoration:none; margin-right:10px;">
+                💳 Pay Now
+            </a>
+
+            <a th:href="@{'/cancel/' + ${item.bookingId}}" class="cancel-btn">
+                ❌ Cancel
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

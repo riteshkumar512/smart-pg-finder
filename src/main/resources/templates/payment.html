@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Payment</title>
+
+    <style>
+        .payment-container {
+            max-width: 420px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .payment-options {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .option {
+            flex: 1;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        .option.active {
+            background: #0072ff;
+            color: white;
+        }
+
+        .input-box {
+            margin: 10px 0;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .qr-box img {
+            width: 150px;
+        }
+
+        .pay-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+    <link rel="stylesheet" th:href="@{/style.css}">
+
+</head>
+
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+
+<div class="payment-container">
+
+    <h2>💳 Complete Payment</h2>
+
+    <!-- Amount -->
+    <h3 style="color:#28a745;">
+        ₹ <span th:text="${amount}"></span> /-
+    </h3>
+
+    <!-- Payment Options -->
+    <div class="payment-options">
+        <div class="option active" onclick="showOption('upi', this)">📱 UPI</div>
+        <div class="option" onclick="showOption('card', this)">💳 Card</div>
+        <div class="option" onclick="showOption('qr', this)">📷 QR</div>
+    </div>
+
+    <!-- FORM -->
+    <form th:action="@{/pay/{id}(id=${booking.id})}" method="post">
+
+        <!-- hidden field -->
+        <input type="hidden" name="paymentMethod" id="paymentMethod" value="upi">
+
+        <!-- UPI -->
+        <div id="upi" class="pay-section">
+            <div class="input-box">
+                <input type="text" name="upi" placeholder="Enter UPI ID (example@upi)" >
+            </div>
+        </div>
+
+        <!-- CARD -->
+        <div id="card" class="pay-section" style="display:none;">
+            <div class="input-box">
+                <input type="text" name="cardNumber" placeholder="Card Number" >
+            </div>
+            <div class="input-box">
+                <input type="text" name="expiry" placeholder="MM/YY" >
+            </div>
+            <div class="input-box">
+                <input type="text" name="cvv" placeholder="CVV" >
+            </div>
+        </div>
+
+        <!-- QR -->
+        <div id="qr" class="pay-section" style="display:none;">
+            <p>Scan & Pay</p>
+            <div class="qr-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay">
+            </div>
+        </div>
+
+        <!-- BUTTON -->
+        <button class="pay-btn" type="submit">
+            Pay ₹ <span th:text="${amount}"></span>
+        </button>
+
+    </form>
+
+</div>
+
+<script>
+    function showOption(type, el) {
+
+    document.getElementById("paymentMethod").value = type;
+
+    document.querySelectorAll(".option").forEach(o => o.classList.remove("active"));
+    el.classList.add("active");
+
+    document.querySelectorAll(".pay-section").forEach(sec => sec.style.display = "none");
+
+    document.getElementById(type).style.display = "block";
+
+    }
+//
+    document.querySelector("form").addEventListener("submit", function(e) {
+
+    const method = document.getElementById("paymentMethod").value;
+
+    // UPI validation
+    if(method === "upi") {
+        const upi = document.querySelector("input[name='upi']").value;
+
+        if(!upi || !upi.includes("@")) {
+            alert("Enter valid UPI ID");
+            e.preventDefault();
+            return;
+        }
+    }
+
+    // CARD validation
+    if(method === "card") {
+        const card = document.querySelector("input[name='cardNumber']").value;
+        const cvv = document.querySelector("input[name='cvv']").value;
+
+        if(!card || card.length < 12 || !cvv || cvv.length < 3) {
+            alert("Enter valid card details");
+            e.preventDefault();
+            return;
+        }
+    }
+
+    // QR → NO VALIDATION (IMPORTANT)
+});
+</script>
+
+</body>
+</html>
